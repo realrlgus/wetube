@@ -3,7 +3,7 @@ import routes from "../routes";
 import { home, search } from "../controllers/videoControllers";
 import { login, logout, join } from "../controllers/userController";
 
-const globalRouter = express();
+const globalRouter = express.Router();
 
 globalRouter.get(routes.home, home);
 globalRouter.get(routes.join, join);
