@@ -91,3 +91,4 @@ package-lock.json
 #env
 .env
 static
+uploads

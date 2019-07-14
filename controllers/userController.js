@@ -24,6 +24,7 @@ export const postJoin = async (req, res, next) => {
       next();
     } catch (error) {
       console.log(error);
+      res.redirect(routes.home);
     }
     // To Do: Log user in
   }
@@ -37,8 +38,18 @@ export const postLogin = passport.authenticate("local", {
   successRedirect: routes.home
 });
 
-export const logout = (req, res) =>
-  res.render("logout", { pageTitle: "Log Out" });
+export const githubLoginCallback = (
+  accessToken,
+  refreshToken,
+  profile,
+  cb
+) => {};
+
+export const logout = (req, res) => {
+  req.logout();
+  res.redirect(routes.home);
+};
+
 export const userDetail = (req, res) =>
   res.render("userDetail", { pageTitle: "User Detail" });
 export const editProfile = (req, res) =>
