@@ -18,7 +18,17 @@ block content
                 span.video__views #{video.views} views
         .video__comments
             if video.comments.length === 1
-                span.video__comment-number 1 comment
+                span.video__comment-number 
+                    span.#jsCommentNumber
+                        span#jsCommentNumber 1
+                        |   comment
             else
-                span.video__comment-number #{video.comments.length} comments 
+                span.video__comment-number
+                    span#jsCommentNumber=video.cooments.length
+                    |   comment
+            form.add__comment#jsAddComment
+                input(type="text", placeholder="Add a comment")
+            ul.video__comments-list#jsCommentList
+                each comment in video.comments.reverse()
+                    span comment.text 
         
