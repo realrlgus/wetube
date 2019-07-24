@@ -43,12 +43,13 @@ export const postUpload = async (req, res) => {
   const newVideo = await Video.create({
     fileUrl: path,
     title,
-    description
+    description,
+    creator: req.user.id
   });
-  console.log(newVideo);
+  req.user.videos.push(newVideo.id);
+  req.user.save();
   res.redirect(routes.videoDetail(newVideo.id));
 };
-
 
 // Video Detail
 
@@ -66,14 +67,17 @@ export const videoDetail = async (req, res) => {
   }
 };
 
-
 export const getEditVideo = async (req, res) => {
   const {
     params: { id }
   } = req;
   try {
     const video = await Video.findById(id);
-    res.render("editVideo", { pageTitle: `Edit ${video.title}`, video });
+    if (video.creator !== req.user.id) {
+      throw Error();
+    } else {
+      res.render("editVideo", { pageTitle: `Edit ${video.title}`, video });
+    }
   } catch (error) {
     res.redirect(routes.home);
   }
@@ -97,7 +101,12 @@ export const deleteVideo = async (req, res) => {
     params: { id }
   } = req;
   try {
-    await Video.findOneAndRemove({ _id: id });
+    const video = await Video.findById(id);
+    if (video.creator !== req.user.id) {
+      throw Error();
+    } else {
+      await Video.findOneAndRemove({ _id: id });
+    }
   } catch (error) {
     console.log(error);
   }
@@ -108,41 +117,56 @@ export const deleteVideo = async (req, res) => {
 //
 
 export const postRegisterView = async (req, res) => {
+  const {
+    params: { id }
+  } = req;
   try {
-    const {
-      params: { id }
-    } = req;
     const video = await Video.findById(id);
     video.views += 1;
-    res.status(200);
     video.save();
-  } catch (err) {
+    res.status(200);
+  } catch (error) {
     res.status(400);
-    res.end();
   } finally {
     res.end();
   }
 };
 
-
 // Add Comment
 
-export const postAddComment = async(req, res){
-  const { params : {id} , body : {comment} , user} = req;
+export const postAddComment = async (req, res) => {
+  const {
+    params: { id },
+    body: { comment },
+    user
+  } = req;
   try {
     const video = await Video.findById(id);
-    const newComment = await Comment.create({
-      text : comment
-      creator:user.id
-    });
-    video.comments.push(newComment._id);
-    video.save();
 
-    
+    const newComment = await Comment.create({
+      text: comment,
+      creator: user.id
+    });
+    video.comments.push(newComment.id);
+    video.save();
   } catch (error) {
+    console.log(error);
     res.status(400);
-    res.end();
-  }finally{
+  } finally {
     res.end();
   }
-}
+};
+
+export const postDeleteComment = async (req, res) => {
+  const {
+    body: { id }
+  } = req;
+  try {
+    const comment = await Comment.findOneAndDelete({ _id: id });
+    comment.save();
+  } catch (error) {
+    res.status(400);
+  } finally {
+    res.end();
+  }
+};
